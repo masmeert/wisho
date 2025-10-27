@@ -1,40 +1,85 @@
-import xml.etree.ElementTree as ET
+from pathlib import Path
+from lxml import etree as ET
 
-from wisho.jmdict.models import KanjiForm, Meaning, Reading, Word
+from wisho.jmdict.dto import EntryDTO, GlossDTO, KanjiDTO, ReadingDTO, SenseDTO
 
 
-def parse_entry(entry: ET.Element) -> Word:
-    id_elem = entry.find("ent_seq")
-    entry_id = int(id_elem.text) if id_elem is not None and id_elem.text else 0
+PATH = Path(__file__).resolve().parents[4] / "resources" / "JMdict_e"
 
-    kanji_forms = []
-    for k_ele in entry.findall("k_ele"):
-        keb = k_ele.find("keb")
-        if keb is not None and keb.text:
-            ke_pri = k_ele.find("ke_pri")
-            is_common = ke_pri is not None and ke_pri.text == "ichi1"
-            kanji_forms.append(KanjiForm(text=keb.text, common=is_common))
 
-    readings = []
-    for r_ele in entry.findall("r_ele"):
-        reb = r_ele.find("reb")
-        if reb is not None and reb.text:
-            re_pri = r_ele.find("re_pri")
-            has_priority = (
-                re_pri is not None and re_pri.text is not None and "ichi" in re_pri.text
+def _find_text_elements(parent: ET._Element, tag: str) -> list[str]:
+    return [element.text for element in parent.findall(tag) if element.text is not None]
+
+
+def _parse_kanji_forms(entry: ET._Element) -> list[KanjiDTO]:
+    kanji_forms: list[KanjiDTO] = []
+    for kanji_element in entry.findall("k_ele"):
+        text = kanji_element.findtext("keb")
+        if not text:
+            continue
+
+        priorities = _find_text_elements(kanji_element, "ke_pri")
+
+        kanji = KanjiDTO(text=text, priorities=priorities)
+        kanji_forms.append(kanji)
+    return kanji_forms
+
+
+def _parse_readings(entry: ET._Element) -> list[ReadingDTO]:
+    readings: list[ReadingDTO] = []
+    for reading_element in entry.findall("r_ele"):
+        text = reading_element.findtext("reb")
+        if not text:
+            continue
+
+        priorities = _find_text_elements(reading_element, "re_pri")
+        restrictions = _find_text_elements(reading_element, "re_restr")
+
+        reading = ReadingDTO(
+            text=text, priorities=priorities, restrictions=restrictions
+        )
+        readings.append(reading)
+    return readings
+
+
+def _parse_senses(entry: ET._Element) -> list[SenseDTO]:
+    senses: list[SenseDTO] = []
+    for sense_element in entry.findall("sense"):
+        parts_of_speech = _find_text_elements(sense_element, "pos")
+        glosses: list[GlossDTO] = []
+        for index, gloss_element in enumerate(sense_element.findall("gloss"), start=1):
+            if gloss_element.text is None:
+                continue
+
+            gloss_lang = gloss_element.get("lang") or "eng"
+            gloss_element = GlossDTO(
+                text=gloss_element.text,
+                lang=gloss_lang,
             )
-            has_common_kanji = any(kf.common for kf in kanji_forms)
-            is_common = has_priority or (re_pri is None and has_common_kanji)
-            readings.append(Reading(text=reb.text, common=is_common))
+            glosses.append(gloss_element)
+        sense = SenseDTO(
+            pos=parts_of_speech,
+            glosses=glosses,
+        )
+        senses.append(sense)
+    return senses
 
-    meanings = []
-    for sense in entry.findall("sense"):
-        glosses = [gloss.text for gloss in sense.findall("gloss") if gloss.text]
-        parts_of_speech = [pos.text for pos in sense.findall("pos") if pos.text]
 
-        if glosses:
-            meanings.append(Meaning(glosses=glosses, parts_of_speech=parts_of_speech))
+def parse_entry(jmdict_entry: ET._Element) -> EntryDTO:
+    entry_sequence = jmdict_entry.findtext("ent_seq")
+    if not entry_sequence:
+        # Should never happen
+        raise ValueError("Missing <ent_seq>")
 
-    return Word(
-        id=entry_id, kanji_forms=kanji_forms, readings=readings, meanings=meanings
+    entry_id = int(entry_sequence)
+
+    kanji_forms = _parse_kanji_forms(jmdict_entry)
+    readings = _parse_readings(jmdict_entry)
+    senses = _parse_senses(jmdict_entry)
+
+    return EntryDTO(
+        id=entry_id,
+        kanji_forms=kanji_forms,
+        readings=readings,
+        senses=senses,
     )

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE JMdict [
+<!ENTITY n "n">
+<!ENTITY v5u "v5u">
+<!ENTITY vt "vt">
+<!ENTITY pn "pn">
+<!ENTITY sK "sK">
+<!ENTITY uk "uk">
+<!ENTITY arch "arch">
+<!ENTITY product "product">
+]>
+<JMdict>
+<entry>
+  <ent_seq>1206730</ent_seq>
+  <k_ele>
+    <keb>学校</keb>
+    <ke_pri>ichi1</ke_pri>
+    <ke_pri>news1</ke_pri>
+    <ke_pri>nf01</ke_pri>
+  </k_ele>
+  <k_ele>
+    <keb>學校</keb>
+    <ke_inf>&sK;</ke_inf>
+  </k_ele>
+  <r_ele>
+    <reb>がっこう</reb>
+    <re_pri>ichi1</re_pri>
+    <re_pri>news1</re_pri>
+    <re_pri>nf01</re_pri>
+  </r_ele>
+  <sense>
+    <pos>&n;</pos>
+    <gloss>school</gloss>
+  </sense>
+</entry>
+<entry>
+<ent_seq>1000300</ent_seq>
+<k_ele>
+<keb>遇う</keb>
+</k_ele>
+<k_ele>
+<keb>配う</keb>
+</k_ele>
+<r_ele>
+<reb>あしらう</reb>
+</r_ele>
+<sense>
+<stagk>遇う</stagk>
+<pos>&v5u;</pos>
+<pos>&vt;</pos>
+<misc>&uk;</misc>
+<gloss>to treat</gloss>
+<gloss>to handle</gloss>
+<gloss>to deal with</gloss>
+</sense>
+<sense>
+<pos>&v5u;</pos>
+<pos>&vt;</pos>
+<misc>&uk;</misc>
+<gloss>to arrange</gloss>
+<gloss>to decorate (with)</gloss>
+<gloss>to adorn (with)</gloss>
+<gloss>to dress (with)</gloss>
+<gloss>to garnish (with)</gloss>
+</sense>
+</entry>
+<entry>
+<ent_seq>1000440</ent_seq>
+<k_ele>
+<keb>あの人</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<k_ele>
+<keb>彼の人</keb>
+</k_ele>
+<r_ele>
+<reb>あのひと</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<sense>
+<pos>&pn;</pos>
+<s_inf>sometimes of one's spouse or partner</s_inf>
+<gloss>he</gloss>
+<gloss>she</gloss>
+<gloss>that person</gloss>
+</sense>
+<sense>
+<pos>&pn;</pos>
+<misc>&arch;</misc>
+<gloss>you</gloss>
+</sense>
+</entry>
+<entry>
+<ent_seq>5746823</ent_seq>
+<k_ele>
+<keb>ＷｉｎＲＡＲ</keb>
+</k_ele>
+<r_ele>
+<reb>ウィンアールエーアール</reb>
+</r_ele>
+<r_ele>
+<reb>ウィンラー</reb>
+</r_ele>
+<sense>
+<pos>&n;</pos>
+<misc>&product;</misc>
+<gloss>WinRAR (file archival software)</gloss>
+</sense>
+</entry>
+</JMdict>
