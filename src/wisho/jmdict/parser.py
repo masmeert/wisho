@@ -52,8 +52,9 @@ def _parse_readings(entry: XmlElement) -> list[ReadingDTO]:
             continue
         priorities = _text_list(reading_element, "re_pri")
         restrictions = _text_list(reading_element, "re_restr")
+        no_kanji = reading_element.find("re_nokanji") is not None
         readings.append(
-            ReadingDTO(text=text, priorities=priorities, restrictions=restrictions)
+            ReadingDTO(text=text, priorities=priorities, restrictions=restrictions, no_kanji=no_kanji)
         )
     return readings
 
