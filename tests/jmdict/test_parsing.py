@@ -95,7 +95,6 @@ EXPECTED_PARSED_ENTRIES = [
             ),
         ],
     ),
-    # 4️⃣ ＷｉｎＲＡＲ
     EntryDTO(
         id=5746823,
         kanji_forms=[
