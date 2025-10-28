@@ -50,13 +50,15 @@ class EntryDTO(BaseModel):
     senses: list[SenseDTO] = Field(default_factory=list)
 
     @field_validator("readings")
-    def _must_have_at_least_one_reading(self, v: list[ReadingDTO]) -> list[ReadingDTO]:
+    @classmethod
+    def _must_have_at_least_one_reading(cls, v: list[ReadingDTO]) -> list[ReadingDTO]:
         if not v:
             raise MissingReadingError()
         return v
 
     @field_validator("senses")
-    def _must_have_at_least_one_sense(self, v: list[SenseDTO]) -> list[SenseDTO]:
+    @classmethod
+    def _must_have_at_least_one_sense(cls, v: list[SenseDTO]) -> list[SenseDTO]:
         if not v:
             raise MissingSenseError()
         return v
