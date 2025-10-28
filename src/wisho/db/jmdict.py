@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from sqlalchemy import (
     Boolean,
@@ -37,10 +37,10 @@ class Entry(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    kanji_forms: Mapped[list["Kanji"]] = relationship(back_populates="entry", cascade="all, delete-orphan")
-    readings: Mapped[list["Reading"]] = relationship(back_populates="entry", cascade="all, delete-orphan")
-    senses: Mapped[list["Sense"]] = relationship(back_populates="entry", cascade="all, delete-orphan")
-    reading_restrictions: Mapped[list["ReadingRestriction"]] = relationship(
+    kanji_forms: Mapped[list[Kanji]] = relationship(back_populates="entry", cascade="all, delete-orphan")
+    readings: Mapped[list[Reading]] = relationship(back_populates="entry", cascade="all, delete-orphan")
+    senses: Mapped[list[Sense]] = relationship(back_populates="entry", cascade="all, delete-orphan")
+    reading_restrictions: Mapped[list[ReadingRestriction]] = relationship(
         back_populates="entry", cascade="all, delete-orphan"
     )
 
@@ -68,8 +68,8 @@ class Kanji(Base):
     entry_id: Mapped[int] = mapped_column(ForeignKey("entry.id"), nullable=False, index=True)
     text: Mapped[str] = mapped_column(String, nullable=False)
 
-    entry: Mapped["Entry"] = relationship(back_populates="kanji_forms")
-    priorities: Mapped[list["EntryPriority"]] = relationship(back_populates="kanji", cascade="all, delete-orphan")
+    entry: Mapped[Entry] = relationship(back_populates="kanji_forms")
+    priorities: Mapped[list[EntryPriority]] = relationship(back_populates="kanji", cascade="all, delete-orphan")
 
     __table_args__ = (
         UniqueConstraint("entry_id", "text", name="uix_kanji_entry_text"),
@@ -103,8 +103,8 @@ class Reading(Base):
     text: Mapped[str] = mapped_column(String, nullable=False)
     no_kanji: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    entry: Mapped["Entry"] = relationship(back_populates="readings")
-    priorities: Mapped[list["EntryPriority"]] = relationship(back_populates="reading", cascade="all, delete-orphan")
+    entry: Mapped[Entry] = relationship(back_populates="readings")
+    priorities: Mapped[list[EntryPriority]] = relationship(back_populates="reading", cascade="all, delete-orphan")
 
     __table_args__ = (
         UniqueConstraint("entry_id", "text", name="uix_reading_entry_text"),
@@ -141,12 +141,12 @@ class EntryPriority(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("entry.id"), nullable=False, index=True)
-    kanji_id: Mapped[Optional[int]] = mapped_column(ForeignKey("kanji.id"), index=True)
-    reading_id: Mapped[Optional[int]] = mapped_column(ForeignKey("reading.id"), index=True)
+    kanji_id: Mapped[int | None] = mapped_column(ForeignKey("kanji.id"), index=True)
+    reading_id: Mapped[int | None] = mapped_column(ForeignKey("reading.id"), index=True)
     raw: Mapped[str] = mapped_column(String, nullable=False)
 
-    kanji: Mapped[Optional["Kanji"]] = relationship(back_populates="priorities")
-    reading: Mapped[Optional["Reading"]] = relationship(back_populates="priorities")
+    kanji: Mapped[Kanji | None] = relationship(back_populates="priorities")
+    reading: Mapped[Reading | None] = relationship(back_populates="priorities")
 
     __table_args__ = (
         # Exactly one target must be set (XOR)
@@ -186,9 +186,9 @@ class Sense(Base):
     entry_id: Mapped[int] = mapped_column(ForeignKey("entry.id"), nullable=False, index=True)
     order: Mapped[int] = mapped_column(Integer, nullable=False)  # 1-based
 
-    entry: Mapped["Entry"] = relationship(back_populates="senses")
-    glosses: Mapped[list["Gloss"]] = relationship(back_populates="sense", cascade="all, delete-orphan")
-    pos: Mapped[list["SensePOS"]] = relationship(back_populates="sense", cascade="all, delete-orphan")
+    entry: Mapped[Entry] = relationship(back_populates="senses")
+    glosses: Mapped[list[Gloss]] = relationship(back_populates="sense", cascade="all, delete-orphan")
+    pos: Mapped[list[SensePOS]] = relationship(back_populates="sense", cascade="all, delete-orphan")
 
 
 class Gloss(Base):
@@ -218,7 +218,7 @@ class Gloss(Base):
     text: Mapped[str] = mapped_column(Text, nullable=False)
     lang: Mapped[str] = mapped_column(String, nullable=False, default="eng")
 
-    sense: Mapped["Sense"] = relationship(back_populates="glosses")
+    sense: Mapped[Sense] = relationship(back_populates="glosses")
 
     __table_args__ = (Index("ix_gloss_text", "text"),)
 
@@ -244,7 +244,7 @@ class SensePOS(Base):
     sense_id: Mapped[int] = mapped_column(ForeignKey("sense.id"), nullable=False, index=True)
     tag: Mapped[str] = mapped_column(String, nullable=False)
 
-    sense: Mapped["Sense"] = relationship(back_populates="pos")
+    sense: Mapped[Sense] = relationship(back_populates="pos")
 
     __table_args__ = (UniqueConstraint("sense_id", "tag", name="uix_sense_pos_once"),)
 
@@ -273,6 +273,6 @@ class ReadingRestriction(Base):
     reading_id: Mapped[int] = mapped_column(ForeignKey("reading.id"), nullable=False, index=True)
     kanji_id: Mapped[int] = mapped_column(ForeignKey("kanji.id"), nullable=False, index=True)
 
-    entry: Mapped["Entry"] = relationship(back_populates="reading_restrictions")
+    entry: Mapped[Entry] = relationship(back_populates="reading_restrictions")
 
     __table_args__ = (UniqueConstraint("entry_id", "reading_id", "kanji_id", name="uix_rrestr_unique"),)
