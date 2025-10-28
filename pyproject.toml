@@ -7,6 +7,7 @@ authors = [{ name = "Massimo Meert", email = "pro@masmeert.com" }]
 requires-python = ">=3.13"
 dependencies = [
     "lxml>=6.0.2",
+    "monotome>=0.2.0",
     "psycopg>=3.2.12",
     "psycopg-binary>=3.2.12",
     "pydantic>=2.12.3",
@@ -86,7 +87,7 @@ select = [
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101"]
+"src/tests/**/*.py" = ["S101"]
 
 [tool.ruff.format]
 quote-style = "double"
