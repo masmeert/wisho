@@ -7,6 +7,7 @@ class KanjiDTO(BaseModel):
     text: str = Field(...)
     priorities: list[str] = Field(default_factory=list)
 
+
 class ReadingDTO(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -43,7 +44,7 @@ class EntryDTO(BaseModel):
         if not v:
             raise ValueError("Entry must have at least one reading")
         return v
-    
+
     @field_validator("senses")
     def _must_have_at_least_one_sense(cls, v):
         if not v:

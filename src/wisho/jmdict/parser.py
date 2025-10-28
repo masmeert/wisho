@@ -6,7 +6,7 @@ from lxml import etree as ET
 
 from wisho.jmdict.dto import EntryDTO, GlossDTO, KanjiDTO, ReadingDTO, SenseDTO
 
-PATH = Path(__file__).resolve().parents[4] / "resources" / "JMdict_e"
+PATH = Path(__file__).resolve().parents[3] / "resources" / "JMdict_e"
 
 XmlElement = ET._Element
 
@@ -16,7 +16,11 @@ def _text_list(parent: XmlElement, tag: str) -> list[str]:
     Return the stripped text content of all child elements named `tag` under `parent`.
     Skips empty or whitespace-only text.
     """
-    return [node.text.strip() for node in parent.iterfind(tag) if node.text and node.text.strip()]
+    return [
+        node.text.strip()
+        for node in parent.iterfind(tag)
+        if node.text and node.text.strip()
+    ]
 
 
 def _first_text(parent: XmlElement, tag: str) -> Optional[str]:
@@ -54,7 +58,12 @@ def _parse_readings(entry: XmlElement) -> list[ReadingDTO]:
         restrictions = _text_list(reading_element, "re_restr")
         no_kanji = reading_element.find("re_nokanji") is not None
         readings.append(
-            ReadingDTO(text=text, priorities=priorities, restrictions=restrictions, no_kanji=no_kanji)
+            ReadingDTO(
+                text=text,
+                priorities=priorities,
+                restrictions=restrictions,
+                no_kanji=no_kanji,
+            )
         )
     return readings
 
@@ -95,7 +104,7 @@ def _parse_senses(entry: XmlElement) -> list[SenseDTO]:
 def parse_entry(jmdict_entry: XmlElement) -> EntryDTO:
     """
     Parse a single <entry> element from JMdict_e into an EntryDTO.
-    
+
     Raises:
         ValueError: If the entry is missing <ent_seq> or if <ent_seq> is not a valid integer.
     """
@@ -117,3 +126,19 @@ def parse_entry(jmdict_entry: XmlElement) -> EntryDTO:
     return EntryDTO(
         id=entry_id, kanji_forms=kanji_forms, readings=readings, senses=senses
     )
+
+
+def parse_jmdict_file() -> list[EntryDTO]:
+    """
+    Parse the JMdict_e XML file and return a list of EntryDTOs.
+    """
+    parser = ET.XMLParser(load_dtd=True, resolve_entities=True, huge_tree=True)
+    tree = ET.parse(PATH, parser=parser)
+    root = tree.getroot()
+
+    entries: list[EntryDTO] = []
+    for jmdict_entry in root.iterfind("entry"):
+        entry_dto = parse_entry(jmdict_entry)
+        entries.append(entry_dto)
+
+    return entries

@@ -136,3 +136,8 @@ def test_correctly_parse_sample_entry(sample_entries_xml):
         entries.append(entry)
 
     assert entries == EXPECTED_PARSED_ENTRIES
+
+
+# def test_successfully_parse_jmdict_file():
+#     entries = parse_jmdict_file()
+#     assert len(entries) == 213906

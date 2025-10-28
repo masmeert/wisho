@@ -32,6 +32,7 @@ class Entry(Base):
         reading_restrictions:
             Optional valid pairs for `Reading` <-> `Kanji`. From `<re_restr>`.
     """
+
     __tablename__ = "entry"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -66,6 +67,7 @@ class Kanji(Base):
         priorities:
             List of frequency tags attached to this kanji form. From `<ke_pri>`.
     """
+
     __tablename__ = "kanji"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -103,6 +105,7 @@ class Reading(Base):
         priorities:
             List of frequency tags attached to this reading form. From `<re_pri>`.
     """
+
     __tablename__ = "reading"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -147,15 +150,14 @@ class EntryPriority(Base):
         reading:
             Relationship back to the `Reading` (if `reading_id` is set).
     """
+
     __tablename__ = "entry_priority"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     entry_id: Mapped[int] = mapped_column(
         ForeignKey("entry.id"), nullable=False, index=True
     )
-    kanji_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("kanji.id"), index=True
-    )
+    kanji_id: Mapped[Optional[int]] = mapped_column(ForeignKey("kanji.id"), index=True)
     reading_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("reading.id"), index=True
     )
@@ -180,21 +182,22 @@ class EntryPriority(Base):
 class Sense(Base):
     """Represents one sense (meaning) block of an entry `<sense>`.
 
-        Attributes:
-        id:
-            Primary key.
-        entry_id:
-            Foreign key to `Entry`.
-        order:
-            1-based position of the sense within the entry. From the order of `<sense>`.
+    Attributes:
+    id:
+        Primary key.
+    entry_id:
+        Foreign key to `Entry`.
+    order:
+        1-based position of the sense within the entry. From the order of `<sense>`.
 
-        entry:
-            Relationship back to the parent `Entry`.
-        glosses:
-            The list of glosses (translations/definitions) for this sense. From `<gloss>`.
-        pos:
-            The list of part-of-speech tags for this sense. From `<pos>`.
+    entry:
+        Relationship back to the parent `Entry`.
+    glosses:
+        The list of glosses (translations/definitions) for this sense. From `<gloss>`.
+    pos:
+        The list of part-of-speech tags for this sense. From `<pos>`.
     """
+
     __tablename__ = "sense"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -230,6 +233,7 @@ class Gloss(Base):
         sense:
             Relationship back to the parent `Sense`.
     """
+
     __tablename__ = "gloss"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -259,6 +263,7 @@ class SensePOS(Base):
         sense:
             Relationship back to the parent `Sense`.
     """
+
     __tablename__ = "sense_pos"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -288,6 +293,7 @@ class ReadingRestriction(Base):
         entry:
             Relationship back to the parent `Entry`.
     """
+
     __tablename__ = "reading_restriction"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
