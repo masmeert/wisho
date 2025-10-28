@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
-from lxml import etree as ET
+
+from lxml import etree
 
 from wisho.jmdict.dto import EntryDTO, GlossDTO, KanjiDTO, ReadingDTO, SenseDTO
 
 PATH = Path(__file__).resolve().parents[3] / "resources" / "JMdict_e"
 
-XmlElement = ET._Element
+XmlElement = etree._Element  # noqa: SLF001
+
+
+class MalformedJMDictEntryError(Exception):
+    def __init__(self) -> None:
+        super().__init__("Malformed JMdict entry")
 
 
 def _text_list(parent: XmlElement, tag: str) -> list[str]:
@@ -16,14 +21,10 @@ def _text_list(parent: XmlElement, tag: str) -> list[str]:
     Return the stripped text content of all child elements named `tag` under `parent`.
     Skips empty or whitespace-only text.
     """
-    return [
-        node.text.strip()
-        for node in parent.iterfind(tag)
-        if node.text and node.text.strip()
-    ]
+    return [node.text.strip() for node in parent.iterfind(tag) if node.text and node.text.strip()]
 
 
-def _first_text(parent: XmlElement, tag: str) -> Optional[str]:
+def _first_text(parent: XmlElement, tag: str) -> str | None:
     """
     Return the stripped text of the first child named `tag`, or None if missing/empty.
     """
@@ -73,11 +74,7 @@ def _get_lang_attr(element: XmlElement) -> str:
     Extract the language attribute from an element, checking both standard and XML namespace versions.
     Defaults to "eng" if not found.
     """
-    return (
-        element.get("lang")
-        or element.get("{http://www.w3.org/XML/1998/namespace}lang")
-        or "eng"
-    )
+    return element.get("lang") or element.get("{http://www.w3.org/XML/1998/namespace}lang") or "eng"
 
 
 def _parse_senses(entry: XmlElement) -> list[SenseDTO]:
@@ -110,30 +107,26 @@ def parse_entry(jmdict_entry: XmlElement) -> EntryDTO:
     """
     entity_sequence = _first_text(jmdict_entry, "ent_seq")
     if entity_sequence is None:
-        raise ValueError("Malformed JMdict entry: missing <ent_seq>.")
+        raise MalformedJMDictEntryError()
 
     try:
         entry_id = int(entity_sequence)
     except ValueError as exc:
-        raise ValueError(
-            f"Malformed JMdict entry: non-integer <ent_seq>='{entity_sequence}'."
-        ) from exc
+        raise MalformedJMDictEntryError() from exc
 
     kanji_forms = _parse_kanji_forms(jmdict_entry)
     readings = _parse_readings(jmdict_entry)
     senses = _parse_senses(jmdict_entry)
 
-    return EntryDTO(
-        id=entry_id, kanji_forms=kanji_forms, readings=readings, senses=senses
-    )
+    return EntryDTO(id=entry_id, kanji_forms=kanji_forms, readings=readings, senses=senses)
 
 
 def parse_jmdict_file() -> list[EntryDTO]:
     """
     Parse the JMdict_e XML file and return a list of EntryDTOs.
     """
-    parser = ET.XMLParser(load_dtd=True, resolve_entities=True, huge_tree=True)
-    tree = ET.parse(PATH, parser=parser)
+    parser = etree.XMLParser(load_dtd=True, resolve_entities=True, huge_tree=True)
+    tree = etree.parse(PATH, parser=parser)
     root = tree.getroot()
 
     entries: list[EntryDTO] = []

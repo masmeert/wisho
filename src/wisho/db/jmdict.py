@@ -1,14 +1,14 @@
 from typing import Optional
 
 from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    ForeignKey,
+    Index,
     Integer,
     String,
-    Boolean,
-    ForeignKey,
-    UniqueConstraint,
-    CheckConstraint,
     Text,
-    Index,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -37,15 +37,9 @@ class Entry(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    kanji_forms: Mapped[list["Kanji"]] = relationship(
-        back_populates="entry", cascade="all, delete-orphan"
-    )
-    readings: Mapped[list["Reading"]] = relationship(
-        back_populates="entry", cascade="all, delete-orphan"
-    )
-    senses: Mapped[list["Sense"]] = relationship(
-        back_populates="entry", cascade="all, delete-orphan"
-    )
+    kanji_forms: Mapped[list["Kanji"]] = relationship(back_populates="entry", cascade="all, delete-orphan")
+    readings: Mapped[list["Reading"]] = relationship(back_populates="entry", cascade="all, delete-orphan")
+    senses: Mapped[list["Sense"]] = relationship(back_populates="entry", cascade="all, delete-orphan")
     reading_restrictions: Mapped[list["ReadingRestriction"]] = relationship(
         back_populates="entry", cascade="all, delete-orphan"
     )
@@ -71,15 +65,11 @@ class Kanji(Base):
     __tablename__ = "kanji"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    entry_id: Mapped[int] = mapped_column(
-        ForeignKey("entry.id"), nullable=False, index=True
-    )
+    entry_id: Mapped[int] = mapped_column(ForeignKey("entry.id"), nullable=False, index=True)
     text: Mapped[str] = mapped_column(String, nullable=False)
 
     entry: Mapped["Entry"] = relationship(back_populates="kanji_forms")
-    priorities: Mapped[list["EntryPriority"]] = relationship(
-        back_populates="kanji", cascade="all, delete-orphan"
-    )
+    priorities: Mapped[list["EntryPriority"]] = relationship(back_populates="kanji", cascade="all, delete-orphan")
 
     __table_args__ = (
         UniqueConstraint("entry_id", "text", name="uix_kanji_entry_text"),
@@ -109,16 +99,12 @@ class Reading(Base):
     __tablename__ = "reading"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    entry_id: Mapped[int] = mapped_column(
-        ForeignKey("entry.id"), nullable=False, index=True
-    )
+    entry_id: Mapped[int] = mapped_column(ForeignKey("entry.id"), nullable=False, index=True)
     text: Mapped[str] = mapped_column(String, nullable=False)
     no_kanji: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     entry: Mapped["Entry"] = relationship(back_populates="readings")
-    priorities: Mapped[list["EntryPriority"]] = relationship(
-        back_populates="reading", cascade="all, delete-orphan"
-    )
+    priorities: Mapped[list["EntryPriority"]] = relationship(back_populates="reading", cascade="all, delete-orphan")
 
     __table_args__ = (
         UniqueConstraint("entry_id", "text", name="uix_reading_entry_text"),
@@ -154,13 +140,9 @@ class EntryPriority(Base):
     __tablename__ = "entry_priority"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    entry_id: Mapped[int] = mapped_column(
-        ForeignKey("entry.id"), nullable=False, index=True
-    )
+    entry_id: Mapped[int] = mapped_column(ForeignKey("entry.id"), nullable=False, index=True)
     kanji_id: Mapped[Optional[int]] = mapped_column(ForeignKey("kanji.id"), index=True)
-    reading_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("reading.id"), index=True
-    )
+    reading_id: Mapped[Optional[int]] = mapped_column(ForeignKey("reading.id"), index=True)
     raw: Mapped[str] = mapped_column(String, nullable=False)
 
     kanji: Mapped[Optional["Kanji"]] = relationship(back_populates="priorities")
@@ -201,18 +183,12 @@ class Sense(Base):
     __tablename__ = "sense"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    entry_id: Mapped[int] = mapped_column(
-        ForeignKey("entry.id"), nullable=False, index=True
-    )
+    entry_id: Mapped[int] = mapped_column(ForeignKey("entry.id"), nullable=False, index=True)
     order: Mapped[int] = mapped_column(Integer, nullable=False)  # 1-based
 
     entry: Mapped["Entry"] = relationship(back_populates="senses")
-    glosses: Mapped[list["Gloss"]] = relationship(
-        back_populates="sense", cascade="all, delete-orphan"
-    )
-    pos: Mapped[list["SensePOS"]] = relationship(
-        back_populates="sense", cascade="all, delete-orphan"
-    )
+    glosses: Mapped[list["Gloss"]] = relationship(back_populates="sense", cascade="all, delete-orphan")
+    pos: Mapped[list["SensePOS"]] = relationship(back_populates="sense", cascade="all, delete-orphan")
 
 
 class Gloss(Base):
@@ -237,9 +213,7 @@ class Gloss(Base):
     __tablename__ = "gloss"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    sense_id: Mapped[int] = mapped_column(
-        ForeignKey("sense.id"), nullable=False, index=True
-    )
+    sense_id: Mapped[int] = mapped_column(ForeignKey("sense.id"), nullable=False, index=True)
     order: Mapped[int] = mapped_column(Integer, nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
     lang: Mapped[str] = mapped_column(String, nullable=False, default="eng")
@@ -267,9 +241,7 @@ class SensePOS(Base):
     __tablename__ = "sense_pos"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    sense_id: Mapped[int] = mapped_column(
-        ForeignKey("sense.id"), nullable=False, index=True
-    )
+    sense_id: Mapped[int] = mapped_column(ForeignKey("sense.id"), nullable=False, index=True)
     tag: Mapped[str] = mapped_column(String, nullable=False)
 
     sense: Mapped["Sense"] = relationship(back_populates="pos")
@@ -297,20 +269,10 @@ class ReadingRestriction(Base):
     __tablename__ = "reading_restriction"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    entry_id: Mapped[int] = mapped_column(
-        ForeignKey("entry.id"), nullable=False, index=True
-    )
-    reading_id: Mapped[int] = mapped_column(
-        ForeignKey("reading.id"), nullable=False, index=True
-    )
-    kanji_id: Mapped[int] = mapped_column(
-        ForeignKey("kanji.id"), nullable=False, index=True
-    )
+    entry_id: Mapped[int] = mapped_column(ForeignKey("entry.id"), nullable=False, index=True)
+    reading_id: Mapped[int] = mapped_column(ForeignKey("reading.id"), nullable=False, index=True)
+    kanji_id: Mapped[int] = mapped_column(ForeignKey("kanji.id"), nullable=False, index=True)
 
     entry: Mapped["Entry"] = relationship(back_populates="reading_restrictions")
 
-    __table_args__ = (
-        UniqueConstraint(
-            "entry_id", "reading_id", "kanji_id", name="uix_rrestr_unique"
-        ),
-    )
+    __table_args__ = (UniqueConstraint("entry_id", "reading_id", "kanji_id", name="uix_rrestr_unique"),)

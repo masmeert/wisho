@@ -1,6 +1,7 @@
 from pathlib import Path
+
 import pytest
-from lxml import etree as ET
+from lxml import etree
 
 from wisho.jmdict.dto import EntryDTO, GlossDTO, KanjiDTO, ReadingDTO, SenseDTO
 from wisho.jmdict.parser import parse_entry
@@ -98,7 +99,7 @@ EXPECTED_PARSED_ENTRIES = [
     EntryDTO(
         id=5746823,
         kanji_forms=[
-            KanjiDTO(text="ＷｉｎＲＡＲ", priorities=[]),
+            KanjiDTO(text="ＷｉｎＲＡＲ", priorities=[]),  # noqa: RUF001
         ],
         readings=[
             ReadingDTO(
@@ -107,9 +108,7 @@ EXPECTED_PARSED_ENTRIES = [
                 no_kanji=False,
                 restrictions=[],
             ),
-            ReadingDTO(
-                text="ウィンラー", priorities=[], no_kanji=False, restrictions=[]
-            ),
+            ReadingDTO(text="ウィンラー", priorities=[], no_kanji=False, restrictions=[]),
         ],
         senses=[
             SenseDTO(
@@ -122,22 +121,17 @@ EXPECTED_PARSED_ENTRIES = [
 
 
 @pytest.fixture
-def sample_entries_xml():
-    parser = ET.XMLParser(load_dtd=True, resolve_entities=True)
-    tree = ET.parse(DATA_DIR / "jmdicte_samples.xml", parser=parser)
+def sample_entries_xml() -> list[etree._Element]:
+    parser = etree.XMLParser(load_dtd=True, resolve_entities=True)
+    tree = etree.parse(DATA_DIR / "jmdicte_samples.xml", parser=parser)
     root = tree.getroot()
     return list(root.findall("entry"))
 
 
-def test_correctly_parse_sample_entry(sample_entries_xml):
+def test_correctly_parse_sample_entry(sample_entries_xml: list[etree._Element]) -> None:
     entries = []
     for entry_element in sample_entries_xml:
         entry = parse_entry(entry_element)
         entries.append(entry)
 
     assert entries == EXPECTED_PARSED_ENTRIES
-
-
-# def test_successfully_parse_jmdict_file():
-#     entries = parse_jmdict_file()
-#     assert len(entries) == 213906

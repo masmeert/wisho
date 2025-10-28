@@ -5,9 +5,15 @@ build/
 dist/
 wheels/
 *.egg-info
+.ruff_cache/
+.pytest_cache/
 
 # Virtual environments
 .venv
 
 # data files
 JMdict_e
+
+# IDE files
+.vscode/
+.idea/

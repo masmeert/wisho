@@ -1,6 +1,16 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
+class MissingReadingError(Exception):
+    def __init__(self) -> None:
+        super().__init__("Entry must have at least one reading")
+
+
+class MissingSenseError(Exception):
+    def __init__(self) -> None:
+        super().__init__("Entry must have at least one sense")
+
+
 class KanjiDTO(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -40,13 +50,13 @@ class EntryDTO(BaseModel):
     senses: list[SenseDTO] = Field(default_factory=list)
 
     @field_validator("readings")
-    def _must_have_at_least_one_reading(cls, v):
+    def _must_have_at_least_one_reading(self, v: list[ReadingDTO]) -> list[ReadingDTO]:
         if not v:
-            raise ValueError("Entry must have at least one reading")
+            raise MissingReadingError()
         return v
 
     @field_validator("senses")
-    def _must_have_at_least_one_sense(cls, v):
+    def _must_have_at_least_one_sense(self, v: list[SenseDTO]) -> list[SenseDTO]:
         if not v:
-            raise ValueError("Entry must have at least one sense")
+            raise MissingSenseError()
         return v
