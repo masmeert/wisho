@@ -1,0 +1,15 @@
+[project]
+name = "jmdict-parser"
+version = "0.1.0"
+description = "Parser for the JMdict database."
+readme = "README.md"
+authors = [{ name = "Massimo Meert", email = "pro@masmeert.com" }]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+jmdict-parser = "jmdict_parser:main"
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"

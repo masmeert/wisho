@@ -2,6 +2,12 @@ version = 1
 revision = 3
 requires-python = ">=3.13"
 
+[manifest]
+members = [
+    "jmdict-parser",
+    "wisho",
+]
+
 [[package]]
 name = "annotated-types"
 version = "0.7.0"
@@ -98,6 +104,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c
 wheels = [
     { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899, upload-time = "2025-03-05T20:05:00.369Z" },
 ]
+
+[[package]]
+name = "jmdict-parser"
+version = "0.1.0"
+source = { editable = "packages/jmdict-parser" }
 
 [[package]]
 name = "lxml"
@@ -577,6 +588,7 @@ name = "wisho"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "jmdict-parser" },
     { name = "lxml" },
     { name = "monotome" },
     { name = "psycopg" },
@@ -595,6 +607,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "jmdict-parser", editable = "packages/jmdict-parser" },
     { name = "lxml", specifier = ">=6.0.2" },
     { name = "monotome", specifier = ">=0.2.0" },
     { name = "psycopg", specifier = ">=3.2.12" },
