@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 
 from wisho.db.engine import get_engine
 from wisho.db.jmdict import (
-    Base,
     Entry,
     EntryPriority,
     Gloss,
@@ -30,9 +29,7 @@ __all__ = [
 
 
 if __name__ == "__main__":
-    # Seed database with jmdict entries
     engine = get_engine()
-    Base.metadata.create_all(engine)
 
     entries = parse_jmdict_file()
     with Session(engine) as session:

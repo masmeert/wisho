@@ -6,7 +6,7 @@ from lxml import etree
 
 from wisho.jmdict.dto import EntryDTO, GlossDTO, KanjiDTO, ReadingDTO, SenseDTO
 
-PATH = Path(__file__).resolve().parents[3] / "resources" / "JMdict_e"
+PATH = Path(__file__).resolve().parents[2] / "resources" / "JMdict_e"
 
 XmlElement = etree._Element  # noqa: SLF001
 

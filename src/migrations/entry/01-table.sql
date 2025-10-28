@@ -1,0 +1,3 @@
+CREATE TABLE __SCHEMA__.entry (
+    id INTEGER NOT NULL PRIMARY KEY
+);
