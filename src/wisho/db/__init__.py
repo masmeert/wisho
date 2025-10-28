@@ -38,7 +38,7 @@ if __name__ == "__main__":
     with Session(engine) as session:
         for entry in entries:
             try:
-               add_entry_to_db(session, entry) 
+                add_entry_to_db(session, entry)
             except IntegrityError:
                 session.rollback()
                 continue
