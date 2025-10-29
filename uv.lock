@@ -1086,6 +1086,7 @@ source = { editable = "." }
 dependencies = [
     { name = "asyncpg" },
     { name = "fastapi", extra = ["standard"] },
+    { name = "greenlet" },
     { name = "jmdict-parser" },
     { name = "lxml" },
     { name = "monotome" },
@@ -1107,6 +1108,7 @@ dev = [
 requires-dist = [
     { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.120.1" },
+    { name = "greenlet", specifier = ">=3.2.4" },
     { name = "jmdict-parser", editable = "packages/jmdict-parser" },
     { name = "lxml", specifier = ">=6.0.2" },
     { name = "monotome", specifier = ">=0.2.0" },
