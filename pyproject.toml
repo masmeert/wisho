@@ -6,6 +6,7 @@ readme = "README.md"
 authors = [{ name = "Massimo Meert", email = "pro@masmeert.com" }]
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi[standard]>=0.120.1",
     "jmdict-parser",
     "lxml>=6.0.2",
     "monotome>=0.2.0",
