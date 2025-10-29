@@ -6,6 +6,7 @@ readme = "README.md"
 authors = [{ name = "Massimo Meert", email = "pro@masmeert.com" }]
 requires-python = ">=3.13"
 dependencies = [
+    "jmdict-parser",
     "lxml>=6.0.2",
     "monotome>=0.2.0",
     "psycopg>=3.2.12",
@@ -24,6 +25,12 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = ["pytest>=8.4.2", "ruff>=0.14.2", "types-lxml>=2025.8.25"]
+
+[tool.uv.sources]
+jmdict-parser = { workspace = true }
+
+[tool.uv.workspace]
+members = ["packages/*"]
 
 [tool.ruff]
 exclude = [
