@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     )
 
     port: int = 8000
-    cors_allow_origins: str = "http://dev.localhost:5173"
+    cors_allow_origins: str = "http://localhost:3000"
 
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
 
