@@ -1,6 +1,6 @@
 # Wisho
 
-Backend for Wisho, a Japanese lookup dictionary using the `JMdict` dataset, normalizing entries with a dedicated parser package, and serving the results with FastAPI.
+Japanese lookup dictionary using the `JMdict` dataset, normalizing entries with a dedicated parser package, and serving the results with FastAPI.
 
 ## License
 
