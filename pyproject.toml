@@ -9,7 +9,7 @@ dependencies = [
     "asyncpg>=0.30.0",
     "fastapi[standard]>=0.120.1",
     "greenlet>=3.2.4",
-    "jmdict-parser",
+    "edict_parser",
     "lxml>=6.0.2",
     "monotome>=0.2.0",
     "psycopg2-binary>=2.9.11",
@@ -34,7 +34,7 @@ dev = [
 ]
 
 [tool.uv.sources]
-jmdict-parser = { workspace = true }
+edict_parser = { workspace = true }
 
 [tool.uv.workspace]
 members = ["packages/*"]

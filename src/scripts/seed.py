@@ -1,7 +1,6 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "jmdict-parser",
 #     "sqlalchemy",
 #     "wisho",
 # ]
@@ -10,8 +9,6 @@
 import asyncio
 from collections.abc import Sequence
 
-from jmdict_parser.parsing import parse_jmdict_file
-from jmdict_parser.schemas.entry import Entry as EntryDTO
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from wisho.core.db.session import get_async_session

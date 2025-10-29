@@ -1,14 +1,14 @@
 [project]
-name = "jmdict-parser"
+name = "edict_parser"
 version = "0.1.0"
-description = "Parser for the JMdict database."
+description = "Parser for the e-dict databases."
 readme = "README.md"
 authors = [{ name = "Massimo Meert", email = "pro@masmeert.com" }]
 requires-python = ">=3.13"
 dependencies = ["lxml>=6.0.2", "pydantic>=2.12.3"]
 
 [project.scripts]
-jmdict-parser = "jmdict_parser:main"
+edict_parser = "edict_parser:main"
 
 [build-system]
 requires = ["uv_build>=0.9.5,<0.10.0"]
