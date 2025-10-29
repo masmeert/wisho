@@ -26,7 +26,7 @@ class DatabaseSettings(BaseSettings):
     @property
     def uri(self) -> str:
         dsn = PostgresDsn.build(
-            scheme="postgresql+psycopg",
+            scheme="postgresql+psycopg2",
             host=self.hostname,
             username=self.user,
             password=self.password,
