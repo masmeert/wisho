@@ -13,11 +13,10 @@ class DatabaseSettings(BaseSettings):
         env_file=ENV_FILE,
     )
 
-    pool_pre_ping: bool = True
-    pool_size: int = 10
-    pool_recycle: int = 300
-    pool_max_overflow: int = 0
     echo: bool = False
+    future: bool = True
+    expire_on_commit: bool = False
+
     hostname: str = "localhost"
     port: int = 5432
     user: str = "wisho"

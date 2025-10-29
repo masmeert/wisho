@@ -1,22 +1,21 @@
 from pathlib import Path
 
 import pytest
+from jmdict_parser.parsing.entry import parse_entry
+from jmdict_parser.schemas import Entry, Gloss, Kanji, Reading, Sense
 from lxml import etree
 
-from wisho.jmdict.dto import EntryDTO, GlossDTO, KanjiDTO, ReadingDTO, SenseDTO
-from wisho.jmdict.parser import parse_entry
-
-DATA_DIR = Path(__file__).parent.parent / "data"
+DATA_DIR = Path(__file__).parent / "data"
 
 EXPECTED_PARSED_ENTRIES = [
-    EntryDTO(
+    Entry(
         id=1206730,
         kanji_forms=[
-            KanjiDTO(text="学校", priorities=["ichi1", "news1", "nf01"]),
-            KanjiDTO(text="學校", priorities=[]),
+            Kanji(text="学校", priorities=["ichi1", "news1", "nf01"]),
+            Kanji(text="學校", priorities=[]),
         ],
         readings=[
-            ReadingDTO(
+            Reading(
                 text="がっこう",
                 priorities=["ichi1", "news1", "nf01"],
                 no_kanji=False,
@@ -24,20 +23,20 @@ EXPECTED_PARSED_ENTRIES = [
             )
         ],
         senses=[
-            SenseDTO(
+            Sense(
                 pos=["n"],
-                glosses=[GlossDTO(text="school", lang="eng")],
+                glosses=[Gloss(text="school", lang="eng")],
             )
         ],
     ),
-    EntryDTO(
+    Entry(
         id=1000300,
         kanji_forms=[
-            KanjiDTO(text="遇う", priorities=[]),
-            KanjiDTO(text="配う", priorities=[]),
+            Kanji(text="遇う", priorities=[]),
+            Kanji(text="配う", priorities=[]),
         ],
         readings=[
-            ReadingDTO(
+            Reading(
                 text="あしらう",
                 priorities=[],
                 no_kanji=False,
@@ -45,34 +44,34 @@ EXPECTED_PARSED_ENTRIES = [
             ),
         ],
         senses=[
-            SenseDTO(
+            Sense(
                 pos=["v5u", "vt"],
                 glosses=[
-                    GlossDTO(text="to treat", lang="eng"),
-                    GlossDTO(text="to handle", lang="eng"),
-                    GlossDTO(text="to deal with", lang="eng"),
+                    Gloss(text="to treat", lang="eng"),
+                    Gloss(text="to handle", lang="eng"),
+                    Gloss(text="to deal with", lang="eng"),
                 ],
             ),
-            SenseDTO(
+            Sense(
                 pos=["v5u", "vt"],
                 glosses=[
-                    GlossDTO(text="to arrange", lang="eng"),
-                    GlossDTO(text="to decorate (with)", lang="eng"),
-                    GlossDTO(text="to adorn (with)", lang="eng"),
-                    GlossDTO(text="to dress (with)", lang="eng"),
-                    GlossDTO(text="to garnish (with)", lang="eng"),
+                    Gloss(text="to arrange", lang="eng"),
+                    Gloss(text="to decorate (with)", lang="eng"),
+                    Gloss(text="to adorn (with)", lang="eng"),
+                    Gloss(text="to dress (with)", lang="eng"),
+                    Gloss(text="to garnish (with)", lang="eng"),
                 ],
             ),
         ],
     ),
-    EntryDTO(
+    Entry(
         id=1000440,
         kanji_forms=[
-            KanjiDTO(text="あの人", priorities=["spec1"]),
-            KanjiDTO(text="彼の人", priorities=[]),
+            Kanji(text="あの人", priorities=["spec1"]),
+            Kanji(text="彼の人", priorities=[]),
         ],
         readings=[
-            ReadingDTO(
+            Reading(
                 text="あのひと",
                 priorities=["spec1"],
                 no_kanji=False,
@@ -80,40 +79,40 @@ EXPECTED_PARSED_ENTRIES = [
             ),
         ],
         senses=[
-            SenseDTO(
+            Sense(
                 pos=["pn"],
                 glosses=[
-                    GlossDTO(text="he", lang="eng"),
-                    GlossDTO(text="she", lang="eng"),
-                    GlossDTO(text="that person", lang="eng"),
+                    Gloss(text="he", lang="eng"),
+                    Gloss(text="she", lang="eng"),
+                    Gloss(text="that person", lang="eng"),
                 ],
             ),
-            SenseDTO(
+            Sense(
                 pos=["pn"],
                 glosses=[
-                    GlossDTO(text="you", lang="eng"),
+                    Gloss(text="you", lang="eng"),
                 ],
             ),
         ],
     ),
-    EntryDTO(
+    Entry(
         id=5746823,
         kanji_forms=[
-            KanjiDTO(text="ＷｉｎＲＡＲ", priorities=[]),  # noqa: RUF001
+            Kanji(text="ＷｉｎＲＡＲ", priorities=[]),  # noqa: RUF001
         ],
         readings=[
-            ReadingDTO(
+            Reading(
                 text="ウィンアールエーアール",
                 priorities=[],
                 no_kanji=False,
                 restrictions=[],
             ),
-            ReadingDTO(text="ウィンラー", priorities=[], no_kanji=False, restrictions=[]),
+            Reading(text="ウィンラー", priorities=[], no_kanji=False, restrictions=[]),
         ],
         senses=[
-            SenseDTO(
+            Sense(
                 pos=["n"],
-                glosses=[GlossDTO(text="WinRAR (file archival software)", lang="eng")],
+                glosses=[Gloss(text="WinRAR (file archival software)", lang="eng")],
             )
         ],
     ),
@@ -134,4 +133,4 @@ def test_correctly_parse_sample_entry(sample_entries_xml: list[etree._Element]) 
         entry = parse_entry(entry_element)
         entries.append(entry)
 
-    assert entries == EXPECTED_PARSED_ENTRIES
+    assert entries == EXPECTED_PARSED_ENTRIES  # noqa: S101
