@@ -11,11 +11,11 @@ dependencies = [
     "greenlet>=3.2.4",
     "edict_parser",
     "lxml>=6.0.2",
-    "monotome>=0.2.0",
     "psycopg2-binary>=2.9.11",
     "pydantic>=2.12.3",
     "pydantic-settings>=2.11.0",
     "sqlalchemy>=2.0.44",
+    "alembic>=1.17.1",
 ]
 
 [project.scripts]
