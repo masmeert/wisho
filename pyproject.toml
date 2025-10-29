@@ -6,12 +6,12 @@ readme = "README.md"
 authors = [{ name = "Massimo Meert", email = "pro@masmeert.com" }]
 requires-python = ">=3.13"
 dependencies = [
+    "asyncpg>=0.30.0",
     "fastapi[standard]>=0.120.1",
     "jmdict-parser",
     "lxml>=6.0.2",
     "monotome>=0.2.0",
-    "psycopg>=3.2.12",
-    "psycopg-binary>=3.2.12",
+    "psycopg2-binary>=2.9.11",
     "pydantic>=2.12.3",
     "pydantic-settings>=2.11.0",
     "sqlalchemy>=2.0.44",
@@ -25,7 +25,12 @@ requires = ["uv_build>=0.9.5,<0.10.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-dev = ["pytest>=8.4.2", "ruff>=0.14.2", "types-lxml>=2025.8.25"]
+dev = [
+    "pytest>=8.4.2",
+    "ruff>=0.14.2",
+    "types-lxml>=2025.8.25",
+    "pytest-asyncio>=1.0.0",
+]
 
 [tool.uv.sources]
 jmdict-parser = { workspace = true }
@@ -66,6 +71,7 @@ exclude = [
 line-length = 120
 indent-width = 4
 target-version = "py311"
+fix = true
 
 [tool.ruff.lint]
 select = [
@@ -95,7 +101,7 @@ select = [
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-"src/tests/**/*.py" = ["S101"]
+"src/tests/**/*.py" = ["S101", "PLR2004"]
 
 [tool.ruff.format]
 quote-style = "double"

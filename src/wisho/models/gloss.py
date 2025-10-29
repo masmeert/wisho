@@ -1,8 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from wisho.core.db.base import Base
-from wisho.models.sense import Sense
+
+if TYPE_CHECKING:
+    from wisho.models.sense import Sense
 
 
 class Gloss(Base):

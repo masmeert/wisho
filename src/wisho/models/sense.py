@@ -1,10 +1,16 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from wisho.core.db.base import Base
-from wisho.models.entry import Entry
-from wisho.models.gloss import Gloss
-from wisho.models.sense_pos import SensePOS
+
+if TYPE_CHECKING:
+    from wisho.models.entry import Entry
+    from wisho.models.gloss import Gloss
+    from wisho.models.sense_pos import SensePOS
 
 
 class Sense(Base):

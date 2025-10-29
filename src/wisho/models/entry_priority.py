@@ -1,9 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy import CheckConstraint, ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from wisho.core.db.base import Base
-from wisho.models.kanji import Kanji
-from wisho.models.reading import Reading
+
+if TYPE_CHECKING:
+    from wisho.models.kanji import Kanji
+    from wisho.models.reading import Reading
 
 
 class EntryPriority(Base):

@@ -1,11 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy import Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from wisho.core.db.base import Base
-from wisho.models.kanji import Kanji
-from wisho.models.reading import Reading
-from wisho.models.reading_restriction import ReadingRestriction
-from wisho.models.sense import Sense
+
+if TYPE_CHECKING:
+    from wisho.models.kanji import Kanji
+    from wisho.models.reading import Reading
+    from wisho.models.reading_restriction import ReadingRestriction
+    from wisho.models.sense import Sense
 
 
 class Entry(Base):
