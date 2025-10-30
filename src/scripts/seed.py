@@ -1,132 +1,116 @@
 # /// script
-# requires-python = ">=3.13"
+# requires-python = ">=3.12"
 # dependencies = [
-#     "jmdict-parser",
+#     "edict",
 #     "sqlalchemy",
 #     "wisho",
 # ]
 # ///
-
 import asyncio
-from collections.abc import Sequence
+from pathlib import Path
 
-from jmdict_parser.parsing import parse_jmdict_file
-from jmdict_parser.schemas.entry import Entry as EntryDTO
-from sqlalchemy.ext.asyncio import AsyncSession
+from edict.core.helpers import load_json_file
+from edict.schemas.jmdict import Word as WordDTO
+from sqlalchemy import select
 
-from wisho.core.db.session import get_async_session
-from wisho.models.entry import Entry
-from wisho.models.entry_priority import EntryPriority
-from wisho.models.gloss import Gloss
-from wisho.models.kanji import Kanji
-from wisho.models.reading import Reading
-from wisho.models.reading_restriction import ReadingRestriction
-from wisho.models.sense import Sense
-from wisho.models.sense_pos import SensePOS
+from wisho.core.db.session import local_session
+from wisho.models.jmdict import Gloss, Kanji, Reading, Sense, SenseExample, Word
+
+DICTIONARY_FILE_PATH = Path(__file__).resolve().parents[2] / "packages" / "edict" / "resources" / "jmdict.json"
 
 
-async def add_kanji_forms_to_db(session: AsyncSession, entry: EntryDTO) -> dict[str, Kanji]:
-    records_map = {}
-    for kanji in entry.kanji_forms:
-        kanji_record = Kanji(
-            entry_id=entry.id,
-            text=kanji.text,
-        )
-        session.add(kanji_record)
-        await session.flush()
-        records_map[kanji.text] = kanji_record
-        for raw_priority in kanji.priorities:
-            priority_record = EntryPriority(
-                entry_id=entry.id,
-                kanji_id=kanji_record.id,
-                raw=raw_priority,
+def pydantic_to_sqlalchemy(edict_word: WordDTO) -> Word:
+    word = Word(id=edict_word.id)
+
+    for kanji in edict_word.kanjis:
+        word.kanjis.append(
+            Kanji(
+                text=kanji.text,
+                is_common=kanji.is_common,
+                tags=kanji.tags,
             )
-            session.add(priority_record)
-    return records_map
-
-
-async def add_readings_to_db(session: AsyncSession, entry: EntryDTO, kanji_map: dict[str, Kanji]) -> None:
-    for reading in entry.readings:
-        reading_record = Reading(
-            entry_id=entry.id,
-            text=reading.text,
-            no_kanji=reading.no_kanji,
         )
-        session.add(reading_record)
-        await session.flush()
 
-        for raw_priority in reading.priorities:
-            priority_record = EntryPriority(
-                entry_id=entry.id,
-                reading_id=reading_record.id,
-                raw=raw_priority,
+    for reading in edict_word.readings:
+        word.readings.append(
+            Reading(
+                text=reading.text,
+                is_common=reading.is_common,
+                tags=reading.tags,
+                applies_to_kanji=reading.applies_to_kanji,
             )
-            session.add(priority_record)
+        )
 
-        for kanji_text in reading.restrictions:
-            if kanji_text in kanji_map:
-                session.add(
-                    ReadingRestriction(
-                        entry_id=entry.id,
-                        reading_id=reading_record.id,
-                        kanji_id=kanji_map[kanji_text].id,
-                    )
+    for sense in edict_word.senses:
+        db_sense = Sense(
+            part_of_speech=[pos.value for pos in sense.part_of_speech],
+            applies_to_kanji=sense.applies_to_kanji,
+            applies_to_reading=sense.applies_to_reading,
+            fields=[field.value for field in sense.fields],
+            dialects=[dialect.value for dialect in sense.dialects],
+            misc=[misc.value for misc in sense.misc],
+            infos=sense.infos,
+        )
+
+        for gloss in sense.glosses:
+            db_sense.glosses.append(
+                Gloss(
+                    type=gloss.type.value if gloss.type else None,
+                    text=gloss.text,
                 )
-
-
-async def add_senses_to_db(session: AsyncSession, entry: EntryDTO) -> None:
-    for sense_index, sense in enumerate(entry.senses, start=1):
-        sense_record = Sense(
-            entry_id=entry.id,
-            order=sense_index,
-        )
-        session.add(sense_record)
-        await session.flush()
-
-        for tag in sense.pos:
-            part_of_speech = SensePOS(sense_id=sense_record.id, tag=tag)
-            session.add(part_of_speech)
-
-        for gloss_index, gloss in enumerate(sense.glosses, start=1):
-            gloss_record = Gloss(
-                sense_id=sense_record.id,
-                order=gloss_index,
-                text=gloss.text,
-                lang=gloss.lang,
             )
-            session.add(gloss_record)
+
+        for example in sense.examples:
+            db_sense.examples.append(
+                SenseExample(
+                    source=example.source,
+                    text=example.text,
+                    jpn=example.jpn,
+                    eng=example.eng,
+                )
+            )
+
+        word.senses.append(db_sense)
+
+    return word
 
 
-async def add_entry_to_db(session: AsyncSession, entry: EntryDTO) -> None:
-    exists = await session.get(Entry, entry.id)
-    if exists:
-        return
+async def seed_database(batch_size: int = 1000) -> None:
+    jmdict_data = load_json_file(DICTIONARY_FILE_PATH)
+    json_words = jmdict_data["words"]
 
-    entry_record = Entry(id=entry.id)
-    session.add(entry_record)
-    await session.flush()
-    kanji_map = await add_kanji_forms_to_db(session, entry)
-    await add_readings_to_db(session, entry, kanji_map)
-    await add_senses_to_db(session, entry)
+    print(f"Loaded {len(json_words)} word entries")
 
+    async with local_session() as session:
+        result = await session.execute(select(Word).limit(1))
+        existing_word = result.scalar_one_or_none()
 
-async def seed_entries(session: AsyncSession, entries: Sequence[EntryDTO]) -> None:
-    for entry in entries:
-        try:
-            await add_entry_to_db(session, entry)
-        except Exception:
-            await session.rollback()
-            raise
-        else:
-            await session.commit()
+        if existing_word:
+            print("Database already contains data. Skipping seed.")
+            return
 
+        print("Converting and inserting entries...")
+        words_to_insert = []
 
-async def main() -> None:
-    entries = parse_jmdict_file()
-    async for session in get_async_session():
-        await seed_entries(session, entries)
-        break
+        for i, word_json in enumerate(json_words):
+            edict_word = WordDTO.from_json(word_json)
+
+            db_word = pydantic_to_sqlalchemy(edict_word)
+            words_to_insert.append(db_word)
+
+            if len(words_to_insert) >= batch_size:
+                session.add_all(words_to_insert)
+                await session.flush()
+                print(f"Inserted {i + 1}/{len(json_words)} entries...")
+                words_to_insert = []
+
+        if words_to_insert:
+            session.add_all(words_to_insert)
+            await session.flush()
+
+        await session.commit()
+        print(f"Successfully seeded database with {len(json_words)} words!")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(seed_database())

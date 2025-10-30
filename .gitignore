@@ -13,6 +13,7 @@ wheels/
 
 # data files
 JMdict_e
+JMdict.json
 
 # IDE files
 .vscode/

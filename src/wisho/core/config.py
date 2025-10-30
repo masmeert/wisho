@@ -26,7 +26,7 @@ class DatabaseSettings(BaseSettings):
     @property
     def uri(self) -> str:
         dsn = PostgresDsn.build(
-            scheme="postgresql+psycopg",
+            scheme="postgresql+asyncpg",
             host=self.hostname,
             username=self.user,
             password=self.password,
@@ -42,6 +42,7 @@ class Settings(BaseSettings):
         env_file=ENV_FILE,
     )
 
+    host: str = "127.0.0.1"
     port: int = 8000
     cors_allow_origins: str = "http://localhost:3000"
 
