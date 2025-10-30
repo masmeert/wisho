@@ -36,7 +36,6 @@ def upgrade() -> None:
             sa.Integer(),
             sa.ForeignKey("entries.sequence", ondelete="CASCADE"),
             nullable=False,
-            index=True,
         ),
         sa.Column("text", sa.String(), nullable=False),
         sa.Column("is_kanji", sa.Boolean(), nullable=False, server_default=sa.text("false")),
@@ -53,9 +52,8 @@ def upgrade() -> None:
             sa.Integer(),
             sa.ForeignKey("entry_elements.id", ondelete="CASCADE"),
             nullable=False,
-            index=True,
         ),
-        sa.Column("priority_type", sa.String(length=16), nullable=False),  # e.g., news/ichi/spec/gai/nf
+        sa.Column("priority_type", sa.String(length=16), nullable=False),
         sa.Column("level", sa.Integer(), nullable=False),
         sa.UniqueConstraint("element_id", "priority_type", "level", name="uq_element_priority"),
     )
@@ -70,9 +68,8 @@ def upgrade() -> None:
             sa.Integer(),
             sa.ForeignKey("entry_elements.id", ondelete="CASCADE"),
             nullable=False,
-            index=True,
         ),
-        sa.Column("info", sa.String(length=16), nullable=False),  # values from Information enum
+        sa.Column("info", sa.String(length=16), nullable=False),
         sa.UniqueConstraint("element_id", "info", name="uq_element_reading_info"),
     )
     op.create_index("ix_element_reading_info_element_id", "element_reading_info", ["element_id"])
@@ -86,9 +83,8 @@ def upgrade() -> None:
             sa.Integer(),
             sa.ForeignKey("entries.sequence", ondelete="CASCADE"),
             nullable=False,
-            index=True,
         ),
-        sa.Column("sense_index", sa.Integer(), nullable=True),  # original per-entry sense id/index, if any
+        sa.Column("sense_index", sa.Integer(), nullable=True),
         sa.Column("misc", sa.String(length=16), nullable=True),
         sa.Column("field", sa.String(length=16), nullable=True),
         sa.Column("dialect", sa.String(length=16), nullable=True),
@@ -103,8 +99,8 @@ def upgrade() -> None:
     op.create_table(
         "sense_parts_of_speech",
         sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True, nullable=False),
-        sa.Column("sense_id", sa.Integer(), sa.ForeignKey("senses.id", ondelete="CASCADE"), nullable=False, index=True),
-        sa.Column("pos", sa.String(length=24), nullable=False),  # values from PartOfSpeech enum
+        sa.Column("sense_id", sa.Integer(), sa.ForeignKey("senses.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("pos", sa.String(length=24), nullable=False),
         sa.UniqueConstraint("sense_id", "pos", name="uq_sense_pos"),
     )
     op.create_index("ix_sense_parts_of_speech_sense_id", "sense_parts_of_speech", ["sense_id"])
@@ -113,9 +109,9 @@ def upgrade() -> None:
     op.create_table(
         "glosses",
         sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True, nullable=False),
-        sa.Column("sense_id", sa.Integer(), sa.ForeignKey("senses.id", ondelete="CASCADE"), nullable=False, index=True),
-        sa.Column("language", sa.String(length=8), nullable=False),  # ISO-639-2 code string from Language enum
-        sa.Column("gtype", sa.String(length=8), nullable=True),  # GlossType values
+        sa.Column("sense_id", sa.Integer(), sa.ForeignKey("senses.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("language", sa.String(length=8), nullable=False),
+        sa.Column("gtype", sa.String(length=8), nullable=True),
         sa.Column("text", sa.String(), nullable=False),
     )
     op.create_index("ix_glosses_sense_id", "glosses", ["sense_id"])
