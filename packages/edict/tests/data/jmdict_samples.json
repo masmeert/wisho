@@ -1,0 +1,221 @@
+{
+  "samples": [
+    {
+      "id": "1005390",
+      "kanji": [],
+      "kana": [
+        {
+          "common": true,
+          "text": "ざっと",
+          "tags": [],
+          "appliesToKanji": ["*"]
+        }
+      ],
+      "sense": [
+        {
+          "partOfSpeech": ["adv"],
+          "appliesToKanji": ["*"],
+          "appliesToKana": ["*"],
+          "related": [],
+          "antonym": [],
+          "field": [],
+          "dialect": [],
+          "misc": ["on-mim"],
+          "info": [],
+          "languageSource": [],
+          "gloss": [
+            { "lang": "eng", "gender": null, "type": null, "text": "roughly" },
+            {
+              "lang": "eng",
+              "gender": null,
+              "type": null,
+              "text": "approximately"
+            },
+            {
+              "lang": "eng",
+              "gender": null,
+              "type": null,
+              "text": "round about"
+            },
+            {
+              "lang": "eng",
+              "gender": null,
+              "type": null,
+              "text": "more or less"
+            }
+          ],
+          "examples": [
+            {
+              "source": { "type": "tatoeba", "value": "159080" },
+              "text": "ざっと",
+              "sentences": [
+                {
+                  "land": "jpn",
+                  "text": "私はパンフレットにざっと目をとおした。"
+                },
+                { "land": "eng", "text": "I glanced through the brochure." }
+              ]
+            }
+          ]
+        },
+        {
+          "partOfSpeech": ["adv"],
+          "appliesToKanji": ["*"],
+          "appliesToKana": ["*"],
+          "related": [],
+          "antonym": [],
+          "field": [],
+          "dialect": [],
+          "misc": ["on-mim"],
+          "info": [],
+          "languageSource": [],
+          "gloss": [
+            {
+              "lang": "eng",
+              "gender": null,
+              "type": null,
+              "text": "cursorily"
+            },
+            { "lang": "eng", "gender": null, "type": null, "text": "briefly" },
+            { "lang": "eng", "gender": null, "type": null, "text": "quickly" },
+            { "lang": "eng", "gender": null, "type": null, "text": "lightly" },
+            { "lang": "eng", "gender": null, "type": null, "text": "roughly" }
+          ],
+          "examples": []
+        }
+      ]
+    },
+    {
+      "id": "1191730",
+      "kanji": [{ "common": true, "text": "家", "tags": [] }],
+      "kana": [
+        { "common": true, "text": "いえ", "tags": [], "appliesToKanji": ["*"] }
+      ],
+      "sense": [
+        {
+          "partOfSpeech": ["n"],
+          "appliesToKanji": ["*"],
+          "appliesToKana": ["*"],
+          "related": [],
+          "antonym": [],
+          "field": [],
+          "dialect": [],
+          "misc": [],
+          "info": [],
+          "languageSource": [],
+          "gloss": [
+            { "lang": "eng", "gender": null, "type": null, "text": "house" },
+            {
+              "lang": "eng",
+              "gender": null,
+              "type": null,
+              "text": "residence"
+            },
+            { "lang": "eng", "gender": null, "type": null, "text": "dwelling" },
+            { "lang": "eng", "gender": null, "type": null, "text": "home" }
+          ],
+          "examples": [
+            {
+              "source": { "type": "tatoeba", "value": "80048" },
+              "text": "家",
+              "sentences": [
+                { "land": "jpn", "text": "木立の間に家が見える。" },
+                { "land": "eng", "text": "I see a house among the trees." }
+              ]
+            }
+          ]
+        },
+        {
+          "partOfSpeech": ["n"],
+          "appliesToKanji": ["*"],
+          "appliesToKana": ["*"],
+          "related": [],
+          "antonym": [],
+          "field": [],
+          "dialect": [],
+          "misc": [],
+          "info": [],
+          "languageSource": [],
+          "gloss": [
+            { "lang": "eng", "gender": null, "type": null, "text": "family" },
+            { "lang": "eng", "gender": null, "type": null, "text": "household" }
+          ],
+          "examples": [
+            {
+              "source": { "type": "tatoeba", "value": "231180" },
+              "text": "家",
+              "sentences": [
+                { "land": "jpn", "text": "あの家の繁栄は大戦中からのことだ。" },
+                {
+                  "land": "eng",
+                  "text": "The prosperity of the family dates from the Great War."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "partOfSpeech": ["n"],
+          "appliesToKanji": ["*"],
+          "appliesToKana": ["*"],
+          "related": [],
+          "antonym": [],
+          "field": [],
+          "dialect": [],
+          "misc": [],
+          "info": [],
+          "languageSource": [],
+          "gloss": [
+            { "lang": "eng", "gender": null, "type": null, "text": "lineage" },
+            {
+              "lang": "eng",
+              "gender": null,
+              "type": null,
+              "text": "family name"
+            }
+          ],
+          "examples": []
+        }
+      ]
+    },
+    {
+      "id": "1261570",
+      "kanji": [{ "common": true, "text": "原子", "tags": [] }],
+      "kana": [
+        {
+          "common": true,
+          "text": "げんし",
+          "tags": [],
+          "appliesToKanji": ["*"]
+        }
+      ],
+      "sense": [
+        {
+          "partOfSpeech": ["n"],
+          "appliesToKanji": ["*"],
+          "appliesToKana": ["*"],
+          "related": [],
+          "antonym": [],
+          "field": ["physics", "chem"],
+          "dialect": [],
+          "misc": [],
+          "info": [],
+          "languageSource": [],
+          "gloss": [
+            { "lang": "eng", "gender": null, "type": null, "text": "atom" }
+          ],
+          "examples": [
+            {
+              "source": { "type": "tatoeba", "value": "125250" },
+              "text": "原子",
+              "sentences": [
+                { "land": "jpn", "text": "鉄の原子番号は26です。" },
+                { "land": "eng", "text": "The atomic number of iron is 26." }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
