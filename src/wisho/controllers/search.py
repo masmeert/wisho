@@ -6,22 +6,24 @@ class SearchController:
         self.word_repository = word_repository
 
     async def search(self, query: str, limit: int = 20) -> list:
-        ranked = await self.word_repository.search_and_score_words(query, limit)
-        word_ids = [row["word_id"] for row in ranked]
+        ranked_rows = await self.word_repository.rank_word_ids_for_query(query, limit)
+        word_ids = [row["word_id"] for row in ranked_rows]
         if not word_ids:
             return []
 
-        readings_map, kanji_map, gloss_map = await self.word_repository.fetch_word_details(word_ids)
-        score_map = {row["word_id"]: float(row["score"]) for row in ranked}
+        score_by_id = {row["word_id"]: float(row["score"]) for row in ranked_rows}
+        details_by_id = await self.word_repository.get_word_details_by_ids(word_ids)
+
         results = []
         for wid in word_ids:
+            details = details_by_id.get(wid, {"readings": [], "kanji": [], "glosses": []})
             results.append(
                 {
                     "id": wid,
-                    "kanjis": kanji_map.get(wid, []),
-                    "readings": readings_map.get(wid, []),
-                    "glosses": gloss_map.get(wid, []),
-                    "score": score_map[wid],
+                    "kanjis": details.get("kanji", []),
+                    "readings": details.get("readings", []),
+                    "glosses": details.get("glosses", []),
+                    "score": score_by_id.get(wid, 0.0),
                 }
             )
 
