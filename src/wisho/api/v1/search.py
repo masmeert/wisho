@@ -11,7 +11,7 @@ router = APIRouter(prefix="/search", tags=["search"])
 
 class GetSearchResults(BaseModel):
     id: int = Field(..., description="Internal word ID")
-    headwords: list[str] = Field(default_factory=list, description="Kanji forms of the word")
+    kanjis: list[str] = Field(default_factory=list, description="Kanji forms of the word")
     readings: list[str] = Field(default_factory=list, description="Kana readings")
     glosses: list[str] = Field(default_factory=list, description="English (or translated) glosses")
     score: float = Field(..., description="Computed search relevance score")

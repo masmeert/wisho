@@ -18,7 +18,7 @@ class SearchController:
             results.append(
                 {
                     "id": wid,
-                    "headwords": kanji_map.get(wid, []),
+                    "kanjis": kanji_map.get(wid, []),
                     "readings": readings_map.get(wid, []),
                     "glosses": gloss_map.get(wid, []),
                     "score": score_map[wid],

@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from typing import Any
 
 from sqlalchemy import (
     Float,
@@ -7,6 +6,7 @@ from sqlalchemy import (
     RowMapping,
     Select,
     String,
+    Subquery,
     bindparam,
     case,
     cast,
@@ -24,19 +24,6 @@ from wisho.models.jmdict import Gloss, Kanji, Reading, Sense
 
 
 class WordRepository:
-    """
-    Central search logic for Wisho dictionary entries.
-
-    Ranks Japanese (prefix-based) and English (full-text) searches
-
-    Weight Strategy:
-    - Base weights (5.0): Reward prefix matches in readings/kanji
-    - Exact match bonus (6.0): Prioritize perfect matches
-    - Length penalty (2.0): Favor shorter forms
-    - Common bonus (1.0): Slightly boost common dictionary entries
-    - Single-char adjustments: Prevent compounds from dominating standalone entries
-    """
-
     # JP weights
     READING_WEIGHT = 5.0
     KANJI_WEIGHT = 5.0
@@ -45,13 +32,12 @@ class WordRepository:
     LENGTH_WEIGHT = 2.0
     COMMON_WEIGHT = 1.0
 
-    # English weights
+    # EN weights
     GLOSS_WEIGHT = 2.0
     EXACT_WORD_WEIGHT = 1.5
 
-    # Result limits
+    # Limits
     QUERY_LIMIT = 20
-    CANDIDATES_LIMIT = 200
 
     # Single-char multipliers
     SINGLE_CHAR_BASE_MULT = 0.5
@@ -61,27 +47,20 @@ class WordRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    def _adjust_weight_for_single_char_query(
-        self, base_weight: float, *, for_exact_match: bool
-    ) -> ColumnElement[float]:
-        q = bindparam("q_norm")
-        is_single_char = func.char_length(q) == 1
-        multiplier = self.SINGLE_CHAR_EXACT_MULT if for_exact_match else self.SINGLE_CHAR_BASE_MULT
-        return literal(base_weight) * case((is_single_char, literal(multiplier)), else_=literal(1.0))
+    @staticmethod
+    def _is_single_char(q_param: str) -> ColumnElement[bool]:
+        q = bindparam(q_param)
+        return func.char_length(q) == 1
 
-    def _calculate_length_score_bonus(self, min_length_column: ColumnElement[int]) -> ColumnElement[float]:
-        q = bindparam("q_norm")
-        is_single_char = func.char_length(q) == 1
-        effective_weight = literal(self.LENGTH_WEIGHT) * case(
-            (is_single_char, literal(self.SINGLE_CHAR_LENGTH_MULT)), else_=literal(1.0)
+    def _length_bonus(self, min_len_col: ColumnElement[int], q_param: str) -> ColumnElement[float]:
+        w = literal(self.LENGTH_WEIGHT) * case(
+            (self._is_single_char(q_param), literal(self.SINGLE_CHAR_LENGTH_MULT)), else_=literal(1.0)
         )
-        return effective_weight * (literal(1.0) / (literal(1.0) + cast(min_length_column, Float)))
+        return w * (literal(1.0) / (literal(1.0) + cast(min_len_col, Float)))
 
-    def _create_prefix_match_stats(
-        self, model: type[Reading] | type[Kanji], query_param: str
-    ) -> Select[tuple[int, int, int, int]]:
-        q = bindparam(query_param)
-        prefix_pattern = func.concat(q, literal("%"))
+    def _jp_prefix_stats(self, model: type[Reading] | type[Kanji], q_param: str) -> Subquery:
+        q = bindparam(q_param)
+        prefix = func.concat(q, literal("%"))
         return (
             select(
                 model.word_id.label("word_id"),
@@ -89,50 +68,44 @@ class WordRepository:
                 func.max(case((model.text == q, literal(1)), else_=literal(0))).label("is_exact"),
                 func.max(case((model.is_common.is_(True), literal(1)), else_=literal(0))).label("any_common"),
             )
-            .where(model.text.ilike(prefix_pattern))
+            .where(model.text.ilike(prefix))
             .group_by(model.word_id)
+        ).subquery()
+
+    def _jp_branch(self, model: type[Reading] | type[Kanji], *, q_param: str, base_w: float, exact_w: float) -> Select:
+        s = self._jp_prefix_stats(model, q_param)
+        base = literal(base_w) * case(
+            (self._is_single_char(q_param), literal(self.SINGLE_CHAR_BASE_MULT)), else_=literal(1.0)
         )
+        exact = case(
+            (
+                s.c.is_exact == 1,
+                literal(exact_w)
+                * case((self._is_single_char(q_param), literal(self.SINGLE_CHAR_EXACT_MULT)), else_=literal(1.0)),
+            ),
+            else_=literal(0.0),
+        )
+        score = base + exact + self._length_bonus(s.c.min_len, q_param)
+        return select(s.c.word_id, score.label("branch_score"), s.c.any_common)
 
-    def _calculate_weighted_score(
-        self, stats_cte: Any, base_weight: float, exact_weight: float
-    ) -> ColumnElement[float]:
-        base_score = self._adjust_weight_for_single_char_query(base_weight, for_exact_match=False)
-        exact_bonus = self._adjust_weight_for_single_char_query(exact_weight, for_exact_match=True)
-        exact_match_score = case((stats_cte.c.is_exact == 1, exact_bonus), else_=literal(0.0))
-        length_bonus = self._calculate_length_score_bonus(stats_cte.c.min_len)
-        return base_score + exact_match_score + length_bonus
-
-    def _build_japanese_prefix_search_query(self) -> Select[tuple[int, float]]:
-        reading_stats = self._create_prefix_match_stats(Reading, "q_norm").cte("reading_stats")
-        reading_score = self._calculate_weighted_score(reading_stats, self.READING_WEIGHT, self.EXACT_READING_WEIGHT)
-        reading_hits = select(
-            reading_stats.c.word_id,
-            reading_score.label("branch_score"),
-            reading_stats.c.any_common,
-        ).cte("reading_hits")
-
-        kanji_stats = self._create_prefix_match_stats(Kanji, "q_norm").cte("kanji_stats")
-        kanji_score = self._calculate_weighted_score(kanji_stats, self.KANJI_WEIGHT, self.EXACT_KANJI_WEIGHT)
-        kanji_hits = select(
-            kanji_stats.c.word_id,
-            kanji_score.label("branch_score"),
-            kanji_stats.c.any_common,
-        ).cte("kanji_hits")
+    def _build_japanese_prefix_search_query(self) -> Select:
+        reading = self._jp_branch(
+            Reading, q_param="q_norm", base_w=self.READING_WEIGHT, exact_w=self.EXACT_READING_WEIGHT
+        )
+        kanji = self._jp_branch(Kanji, q_param="q_norm", base_w=self.KANJI_WEIGHT, exact_w=self.EXACT_KANJI_WEIGHT)
 
         all_hits = union_all(
-            select(reading_hits.c.word_id, reading_hits.c.branch_score, reading_hits.c.any_common),
-            select(kanji_hits.c.word_id, kanji_hits.c.branch_score, kanji_hits.c.any_common),
-        ).cte("all_hits")
+            select(reading.c.word_id, reading.c.branch_score, reading.c.any_common),
+            select(kanji.c.word_id, kanji.c.branch_score, kanji.c.any_common),
+        ).subquery()
 
         scored = (
             select(
                 all_hits.c.word_id,
                 func.sum(all_hits.c.branch_score).label("base_score"),
                 func.max(all_hits.c.any_common).label("has_common"),
-            )
-            .group_by(all_hits.c.word_id)
-            .cte("scored")
-        )
+            ).group_by(all_hits.c.word_id)
+        ).subquery()
 
         final_score = scored.c.base_score + case(
             (scored.c.has_common == 1, literal(self.COMMON_WEIGHT)), else_=literal(0.0)
@@ -140,7 +113,7 @@ class WordRepository:
 
         return select(scored.c.word_id, final_score.label("score")).order_by(final_score.desc()).limit(self.QUERY_LIMIT)
 
-    def _check_word_has_common_forms(self) -> Select[tuple[int, int]]:
+    def _any_common_subq(self) -> Subquery:
         return (
             select(
                 Sense.word_id.label("word_id"),
@@ -155,21 +128,20 @@ class WordRepository:
             .join(Reading, Reading.word_id == Sense.word_id, isouter=True)
             .join(Kanji, Kanji.word_id == Sense.word_id, isouter=True)
             .group_by(Sense.word_id)
-        )
+        ).subquery()
 
-    def _build_english_fulltext_search_query(self) -> Select[tuple[int, float]]:
+    def _build_english_fulltext_search_query(self) -> Select:
         cfg = cast(literal("english"), REGCONFIG)
         q_raw = bindparam("q_raw")
 
         gloss_vector = func.to_tsvector(cfg, func.coalesce(Gloss.text, literal("", String())))
         fts_query = func.plainto_tsquery(cfg, q_raw)
-        norm_flags = literal(1 | 16 | 32)
-        rank = func.ts_rank_cd(gloss_vector, fts_query, norm_flags)
+        rank = func.ts_rank_cd(gloss_vector, fts_query, literal(1 | 16 | 32))
 
         exact_pattern = func.concat(literal(r"\y"), q_raw, literal(r"\y"))
         exact_hit = cast(Gloss.text.op("~*")(exact_pattern), Integer)
 
-        gloss_scores = (
+        scores = (
             select(
                 Sense.word_id.label("word_id"),
                 func.max(rank).label("rank_max"),
@@ -179,33 +151,31 @@ class WordRepository:
             .join(Sense, Sense.id == Gloss.sense_id)
             .where(gloss_vector.op("@@")(fts_query))
             .group_by(Sense.word_id)
-            .cte("gloss_scores")
-        )
+        ).subquery()
 
-        any_common = self._check_word_has_common_forms().cte("any_common")
-        final_score = (
-            literal(self.GLOSS_WEIGHT) * gloss_scores.c.rank_max
-            + literal(self.EXACT_WORD_WEIGHT) * cast(gloss_scores.c.exact_any, Integer)
+        any_common = self._any_common_subq()
+
+        final = (
+            literal(self.GLOSS_WEIGHT) * scores.c.rank_max
+            + literal(self.EXACT_WORD_WEIGHT) * cast(scores.c.exact_any, Integer)
             + literal(self.COMMON_WEIGHT) * cast(func.coalesce(any_common.c.any_common, 0), Integer)
         )
 
         return (
-            select(gloss_scores.c.word_id, final_score.label("score"))
-            .join(any_common, any_common.c.word_id == gloss_scores.c.word_id, isouter=True)
-            .order_by(final_score.desc())
+            select(scores.c.word_id, final.label("score"))
+            .join(any_common, any_common.c.word_id == scores.c.word_id, isouter=True)
+            .order_by(final.desc())
             .limit(self.QUERY_LIMIT)
         )
 
     async def search_and_score_words(self, query: str, limit: int = 20) -> Sequence[RowMapping]:
-        normalized_query = nfkc(query)
-
-        if is_japanese_text(normalized_query):
+        q_norm = nfkc(query)
+        if is_japanese_text(q_norm):
             stmt = self._build_japanese_prefix_search_query().limit(limit)
-            params = {"q_norm": normalized_query}
+            params = {"q_norm": q_norm}
         else:
             stmt = self._build_english_fulltext_search_query().limit(limit)
             params = {"q_raw": query}
-
         result = await self.session.execute(stmt, params)
         return result.mappings().all()
 
@@ -216,20 +186,14 @@ class WordRepository:
             return {}, {}, {}
 
         rd = await self.session.execute(
-            select(
-                Reading.word_id,
-                func.array_agg(func.distinct(Reading.text)).label("readings"),
-            )
+            select(Reading.word_id, func.array_agg(func.distinct(Reading.text)).label("readings"))
             .where(Reading.word_id.in_(word_ids))
             .group_by(Reading.word_id)
         )
         readings_by_id = {r.word_id: r.readings for r in rd}
 
         kj = await self.session.execute(
-            select(
-                Kanji.word_id,
-                func.array_agg(func.distinct(Kanji.text)).label("kanjis"),
-            )
+            select(Kanji.word_id, func.array_agg(func.distinct(Kanji.text)).label("kanjis"))
             .where(Kanji.word_id.in_(word_ids))
             .group_by(Kanji.word_id)
         )
